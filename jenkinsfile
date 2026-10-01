@@ -6,7 +6,7 @@ pipeline {
     environment {
         GREEN_IP = '172.31.31.252'
 
-        ALB_LISTENER_ARN = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:loadbalancer/app/Blue-Green-alb/2ac5997a184c3f2c'
+        ALB_LISTENER_ARN = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:listener/app/Blue-Green-alb/2ac5997a184c3f2c/15467a3f2b2bb6d2'
 
         BLUE_TG_ARN  = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:targetgroup/Blue-TG/b0a6b15f30b5169e'
         GREEN_TG_ARN = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:targetgroup/Green-TG/74bab30b0da2b24d'
@@ -28,7 +28,7 @@ pipeline {
 
                 echo 'Deploying new version to Green server...'
 
-                sshagent(['ec2-user']) {
+                sshagent(['green-server-key']) {
 
                     sh '''
                         ssh -o StrictHostKeyChecking=no ec2-user@$GREEN_IP \
