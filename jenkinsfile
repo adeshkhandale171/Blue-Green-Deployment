@@ -47,6 +47,7 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no ec2-user@$GREEN_IP \
                         "sudo cp /tmp/index.html /usr/share/nginx/html/index.html &&
                          sudo cp /tmp/health.html /usr/share/nginx/html/health.html &&
+                         sudo rm -f /usr/share/nginx/html/health.html &&
                          sudo systemctl restart nginx"
                     '''
                 }
