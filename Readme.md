@@ -318,6 +318,8 @@ Version 1
 ```
 After rollback, verify the ALB listener and open the ALB DNS again.
 
+![src6](./img/Screenshot%202026-10-01%20164806.png)
+
 The website should display Version 1, confirming that production traffic has returned to the previous environment.
 
 ## Important: The health-check failure change is only for testing the rollback mechanism. It should be removed from the final Jenkinsfile.
