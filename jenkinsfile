@@ -3,12 +3,12 @@ pipeline {
     agent any
 
     environment {
-        GREEN_IP = 'GREEN_SERVER_IP'
+        GREEN_IP = '172.31.31.252'
 
-        ALB_LISTENER_ARN = 'YOUR_ALB_LISTENER_ARN'
+        ALB_LISTENER_ARN = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:loadbalancer/app/Blue-Green-alb/2ac5997a184c3f2c'
 
-        BLUE_TG_ARN  = 'YOUR_BLUE_TARGET_GROUP_ARN'
-        GREEN_TG_ARN = 'YOUR_GREEN_TARGET_GROUP_ARN'
+        BLUE_TG_ARN  = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:targetgroup/Blue-TG/b0a6b15f30b5169e'
+        GREEN_TG_ARN = 'arn:aws:elasticloadbalancing:us-west-1:681975221281:targetgroup/Green-TG/74bab30b0da2b24d'
     }
 
     stages {
@@ -18,7 +18,7 @@ pipeline {
                 echo 'Getting application code from GitHub...'
 
                 git branch: 'main',
-                    url: 'https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git'
+                    url: 'https://github.com/adeshkhandale171/simple-code.git'
             }
         }
 
