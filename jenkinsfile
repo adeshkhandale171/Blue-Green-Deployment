@@ -1,0 +1,102 @@
+pipeline {
+
+    agent any
+
+    environment {
+        GREEN_IP = 'GREEN_SERVER_IP'
+
+        ALB_LISTENER_ARN = 'YOUR_ALB_LISTENER_ARN'
+
+        BLUE_TG_ARN  = 'YOUR_BLUE_TARGET_GROUP_ARN'
+        GREEN_TG_ARN = 'YOUR_GREEN_TARGET_GROUP_ARN'
+    }
+
+    stages {
+
+        stage('1. Checkout Code') {
+            steps {
+                echo 'Getting application code from GitHub...'
+
+                git branch: 'main',
+                    url: 'https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git'
+            }
+        }
+
+        stage('2. Deploy to Green') {
+            steps {
+
+                echo 'Deploying new version to Green server...'
+
+                sshagent(['green-server-key']) {
+
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@$GREEN_IP \
+                        "sudo dnf install nginx -y &&
+                         sudo systemctl enable nginx &&
+                         sudo systemctl start nginx"
+
+                        scp -o StrictHostKeyChecking=no \
+                        index.html \
+                        ec2-user@$GREEN_IP:/tmp/index.html
+
+                        scp -o StrictHostKeyChecking=no \
+                        health.html \
+                        ec2-user@$GREEN_IP:/tmp/health.html
+
+                        ssh -o StrictHostKeyChecking=no ec2-user@$GREEN_IP \
+                        "sudo cp /tmp/index.html /usr/share/nginx/html/index.html &&
+                         sudo cp /tmp/health.html /usr/share/nginx/html/health.html &&
+                         sudo systemctl restart nginx"
+                    '''
+                }
+            }
+        }
+
+        stage('3. Health Check') {
+            steps {
+
+                echo 'Checking Green server health...'
+
+                sh '''
+                    curl -f http://$GREEN_IP/health.html
+                '''
+            }
+        }
+
+        stage('4. Switch Traffic to Green') {
+            steps {
+
+                echo 'Health check successful.'
+                echo 'Switching ALB traffic from Blue to Green...'
+
+                sh '''
+                    aws elbv2 modify-listener \
+                    --listener-arn $ALB_LISTENER_ARN \
+                    --default-actions Type=forward,TargetGroupArn=$GREEN_TG_ARN
+                '''
+            }
+        }
+    }
+
+    post {
+
+        failure {
+
+            echo 'Deployment failed!'
+            echo 'Rolling back ALB traffic to Blue...'
+
+            sh '''
+                aws elbv2 modify-listener \
+                --listener-arn $ALB_LISTENER_ARN \
+                --default-actions Type=forward,TargetGroupArn=$BLUE_TG_ARN
+            '''
+
+            echo 'Rollback completed. Blue is serving traffic again.'
+        }
+
+        success {
+            echo 'Blue-Green deployment completed successfully!'
+        }
+    }
+}
+
