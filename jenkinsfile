@@ -1,3 +1,4 @@
+
 pipeline {
 
     agent any
@@ -27,7 +28,7 @@ pipeline {
 
                 echo 'Deploying new version to Green server...'
 
-                sshagent(['green-server-key']) {
+                sshagent(['ec2-user']) {
 
                     sh '''
                         ssh -o StrictHostKeyChecking=no ec2-user@$GREEN_IP \
@@ -95,7 +96,9 @@ pipeline {
         }
 
         success {
+
             echo 'Blue-Green deployment completed successfully!'
+            echo 'Green is now serving production traffic.'
         }
     }
 }
