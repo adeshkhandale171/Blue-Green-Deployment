@@ -19,7 +19,7 @@ pipeline {
                 echo 'Getting application code from GitHub...'
 
                 git branch: 'main',
-                    url: 'https://github.com/adeshkhandale171/simple-code.git'
+                    url: 'https://github.com/adeshkhandale171/Blue-Green-Deployment.git'
             }
         }
 
